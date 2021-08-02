@@ -118,7 +118,7 @@
 	<h1>busy</h1>
 
 	{#each peopleTimes as personTime (personTime.person.id)}
-		<div class="head" transition:scale|local={{ start: 0.7 }} animate:flip={{ duration: 200 }}>
+		<div class="block" transition:scale|local={{ start: 0.7 }} animate:flip={{ duration: 200 }}>
 			<div class="task new">
 				<div class="name">{personTime.person.name}</div>
 				<div class="hours">{personTime.hours}</div>
@@ -157,22 +157,22 @@
 		</div>
 	{/each}
 	<br />
-	<div class="task head">
+	<div class="task block">
 		<div>Busy</div>
 		<div class="total">{busy}</div>
 	</div>
-	<div class="task head">
+	<div class="task block">
 		<div>Total</div>
 		<div class="total">{total}</div>
 	</div>
-	<div class="task head">
+	<div class="task block">
 		<div>Continuity</div>
 		<div class="total">{continuity}</div>
 	</div>
 </section>
 
 <style>
-	.head {
+	.block {
 		width: 80%;
 		align-items: center;
 		margin: 0 0 0.5rem 0;
@@ -237,8 +237,13 @@
 		margin-top: 6px;
 	}
 
+	.delete:hover {
+		transition: opacity 0.2s;
+		opacity: 1;
+	}
+
 	.delete {
-		background-size: 19px;
+		background-size: 25px;
 		background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4.5 5V22H19.5V5H4.5Z' fill='%23676778' stroke='%23676778' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M10 10V16.5' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M14 10V16.5' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 5H22' stroke='%23676778' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M8 5L9.6445 2H14.3885L16 5H8Z' fill='%23676778' stroke='%23676778' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E%0A");
 		background-repeat: no-repeat;
 		opacity: 0.2;
@@ -247,6 +252,7 @@
 		height: 25px;
 		float: right;
 		margin-left: 34px;
+		border: none;
 	}
 
 	.task {

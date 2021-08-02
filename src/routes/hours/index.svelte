@@ -1,4 +1,4 @@
-<script type="typescript" >
+<script type="typescript">
 	import { getTeam, getTeamsHours } from '$lib/utils';
 	import type { Person, WorkingHourDate } from '../../global';
 	import { onMount } from 'svelte';
@@ -8,9 +8,9 @@
 
 	onMount(() => {
 		team = getTeam();
-		rows= getTeamsHours(team);
+		rows = getTeamsHours(team);
 	});
-	
+
 	const hourChange = (personHour, event) => {
 		personHour.hours = parseFloat(event.target.value);
 		save();
@@ -56,20 +56,20 @@
 <div class="content">
 	<h1>hours kept</h1>
 	<table>
-		<tr>
+		<tr class="block">
 			<th class="left">Controls</th>
 			<th class="left">Date</th>
 			{#each team as person}
 				<th class="col">{person.name}</th>
 			{/each}
 		</tr>
-		{#each rows as row, index}
+		{#each rows as row, index (index)}
 			{#if (row.date + '').startsWith('Mon') || index == 0}
 				<tr>
 					<td>&nbsp;</td>
 				</tr>
 			{/if}
-			<tr>
+			<tr class="block">
 				<td>
 					<button on:click={($event) => plusHour(index)}>+</button>
 					<button on:click={($event) => takeHour(index)}>-</button>
@@ -92,10 +92,24 @@
 </div>
 
 <style>
+	button {
+		background-color: #ecf0f4;
+		border-color: #dfe5ef;
+		border-radius: 20px;
+		box-shadow: none;
+	}
 	.content {
 		width: 100%;
-		max-width: var(--column-width);
 		margin: var(--column-margin-top) auto 0 auto;
+	}
+	tr {
+		font-size: 28px;
+		width: 100%;
+		padding: 0.5em 1em 0.3em 1em;
+		box-sizing: border-box;
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 8px;
+		text-align: center;
 	}
 	.col {
 		min-width: 70px;
@@ -108,9 +122,20 @@
 	input {
 		background-color: #ecf0f4;
 		border: 0;
-		width: 40px;
+		width: 60px;
 	}
 	.left {
 		text-align: left;
+	}
+	.block {
+		width: 80%;
+		align-items: center;
+		margin: 0 0 0.5rem 0;
+		padding: 0.5rem;
+		background-color: #dfe5ef;
+		border-radius: 8px;
+		filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.1));
+		transform: translate(-1px, -1px);
+		transition: filter 0.2s, transform 0.2s;
 	}
 </style>
