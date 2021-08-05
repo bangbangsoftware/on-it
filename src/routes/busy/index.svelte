@@ -10,7 +10,7 @@
 	let total = 0;
 	let busy = 0;
 
-	onMount(() => {
+	const setup = () => {
 		const stored = localStorage.getItem('peopleTimes');
 		const fromStore = stored ? JSON.parse(stored) : null;
 		peopleTimes = fromStore ? fromStore : defaultTimes();
@@ -26,7 +26,14 @@
 			.reduce((a, b) => a + b);
 
 		continuity = total;
-	});
+	};
+
+	onMount(setup);
+
+	const clear = () =>{
+		localStorage.removeItem("peopleTimes");
+		setup();
+	}
 
 	const defaultTimes = () => {
 		const team = getTeam();
@@ -94,6 +101,14 @@
 		save();
 	};
 
+	const addHours = (tickets: Array<Ticket>) =>
+		tickets.map((ticket) => ticket.hours).reduce((a, b) => a + b);
+
+	const workContinuity = (personTime: PeopleTime) =>{
+		const hours = addHours(personTime.times);
+		return personTime.hours - hours;
+	}
+
 	const onKeyPress = (e) => {
 		if (e.charCode !== 13) {
 			// only return
@@ -115,7 +130,7 @@
 </svelte:head>
 
 <section>
-	<h1>busy</h1>
+	<h1 on:click={clear}>busy</h1>
 
 	{#each peopleTimes as personTime (personTime.person.id)}
 		<div class="block" transition:scale|local={{ start: 0.7 }} animate:flip={{ duration: 200 }}>
@@ -154,10 +169,19 @@
 					/>
 				</div>
 			{/each}
+			<div class="busy-total">
+				<div>Busy</div>
+				<div class="total">{addHours(personTime.times)}</div>
+			</div>
+			<br>
+			<div class="task">
+				<div>Continuity</div>
+				<div class="total">{workContinuity(personTime)}</div>
+			</div>
 		</div>
 	{/each}
 	<br />
-	<div class="task block">
+	<div class="busy-total block">
 		<div>Busy</div>
 		<div class="total">{busy}</div>
 	</div>
@@ -259,5 +283,10 @@
 		display: grid;
 		grid-template-columns: 6fr 6fr;
 		grid-gap: 0.5rem;
+	}
+
+	.busy-total {
+		display: grid;
+		grid-template-columns: 7fr 1fr 1fr;
 	}
 </style>
