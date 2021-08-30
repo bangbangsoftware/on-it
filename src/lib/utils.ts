@@ -48,9 +48,9 @@ const load = (storedRows: string):Array<WorkingHourDate> => {
 }
 
 
-export const getTeamsHours = (team: Person[]) => {
+export const getTeamsHours = (team: Person[]):Array<WorkingHourDate>  => {
 	// set default from local storage
-	const hours: number = 7.5; // Standard Hours - should let the user set it? In storage, or dynamic based on person and day?
+	const hours = 7.5; // Standard Hours - should let the user set it? In storage, or dynamic based on person and day?
 	const defaultPeoplesWorkingHours: Array<PersonHour> = team.map((person: Person) => {
 		return { person, hours };
 	});

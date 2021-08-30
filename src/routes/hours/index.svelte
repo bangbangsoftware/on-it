@@ -47,6 +47,13 @@
 	const save = () => {
 		localStorage.setItem('teamsHours', JSON.stringify(rows));
 	};
+
+	const resetDate = () =>{
+		localStorage.removeItem("teamsHours");
+		rows = getTeamsHours(team);
+		save();
+	}
+	
 </script>
 
 <svelte:head>
@@ -54,8 +61,8 @@
 </svelte:head>
 
 <div class="content">
-	<h1>hours kept</h1>
-	<table>
+	<h1 on:click={resetDate}>hours kept</h1>
+	<table class="main">
 		<tr class="block">
 			<th class="left">Controls</th>
 			<th class="left">Date</th>
@@ -92,6 +99,9 @@
 </div>
 
 <style>
+	.main {
+		width:100%;
+	}
 	button {
 		background-color: #ecf0f4;
 		border-color: #dfe5ef;
@@ -113,7 +123,7 @@
 	}
 	.col {
 		min-width: 70px;
-		text-align: left;
+		text-align: center;
 	}
 	.date {
 		min-width: 130px;

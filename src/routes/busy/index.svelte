@@ -33,6 +33,14 @@
 	const clear = () =>{
 		localStorage.removeItem("peopleTimes");
 		setup();
+		peopleTimes.forEach((personTime:PeopleTime)=>{
+			const key = personTime.person.id+"-"+personTime.person.name;
+			const fromStore = localStorage.getItem(key);
+			const tasks:Array<Ticket> = fromStore? JSON.parse(fromStore): [];
+			tasks.forEach((ticket:Ticket)=>{
+				validateAndSave(personTime.person.id, ticket.desc, ticket.hours, true);
+			});
+		})
 	}
 
 	const defaultTimes = () => {
@@ -59,19 +67,44 @@
 		localStorage.setItem('peopleTimes', JSON.stringify(peopleTimes));
 	};
 
-	const validateAndSave = (personId: number, desc: string, hours: number) => {
-		console.log(personId, desc, hours);
+	const determineHours =(hours:string) =>{
+		try {
+			const f = parseFloat(hours);
+			return f;
+		} catch(er){
+			console.warn(hours+" is not a float");
+		}
+		const value = hours.substring(0,hours.length-1).trim();
+		const numberType = hours.substring(hours.trim().length -1);
+
+		try {
+			const f = parseFloat(value);
+			if (hours.endsWith("d")){
+
+}
+		} catch(er){
+			console.warn(value+" is not a float with type "+numberType);
+		}
+	}
+
+	const validateAndSave = (personId: number, desc: string, hoursString: string, pin = false) => {
+		console.log(personId, desc, hoursString);
 		if (!desc) {
 			console.error('No task name');
 			(<HTMLInputElement>document.getElementById(personId + '--new-task')).focus();
 			return;
 		}
-		if (!hours) {
+		if (!hoursString) {
 			console.error('No hours for new task');
 			(<HTMLInputElement>document.getElementById(personId + '--new-task-hours')).focus();
 			return;
 		}
-		const pin = false;
+		const hours = determineHours(hoursString);
+		if (!hours) {
+			(<HTMLInputElement>document.getElementById(personId + '--new-task-hours')).focus();
+			return;
+		}
+
 		const newTask: Ticket = { pin, desc, hours };
 		peopleTimes = peopleTimes.map((peopleTime) => {
 			if (peopleTime.person.id != personId) {
@@ -123,6 +156,31 @@
 		);
 		validateAndSave(id, taskName, hours);
 	};
+
+	const take = (tickets:Array<Ticket>, ticket: Ticket):Array<Ticket>=> tickets.filter(tick => tick.desc != ticket.desc);
+	const add  = (tickets:Array<Ticket>, ticket: Ticket):Array<Ticket> => {
+		ticket.pin = true;
+		tickets.push(ticket);
+		return tickets;
+	}
+	const clean = (list:Array<Ticket>):Array<Ticket> =>{
+		const cleanList:Array<Ticket> = [];
+		list.forEach((ticket:Ticket)=>{
+			const inAlready = cleanList.find((t:Ticket)=> t.desc == ticket.desc);
+			if (!inAlready){
+				cleanList.push(ticket);
+			}
+		});
+		return cleanList;
+	}
+
+	const keeper = (event, personTime: PeopleTime, ticket: Ticket) =>{
+		const pinnedTickets = localStorage.getItem(personTime.person.id+"-"+personTime.person.name);
+		const tickets:Array<Ticket> = pinnedTickets? JSON.parse(pinnedTickets): [];
+		const newList:Array<Ticket> = (event.target.value == 'on')? add(tickets,ticket):take(tickets,ticket); 
+		const cleanList = clean(newList);
+		localStorage.setItem(personTime.person.id+"-"+personTime.person.name,JSON.stringify(cleanList));
+	}
 </script>
 
 <svelte:head>
@@ -150,7 +208,7 @@
 					on:keypress={onKeyPress}
 					name="{personTime.person.id}--new-task-hours"
 					id="{personTime.person.id}--new-task-hours"
-					type="number"
+					type="string"
 					aria-label="Task Time"
 					placeholder="Hours"
 				/>
@@ -158,7 +216,7 @@
 			{#each personTime.times as ticket, index}
 				<div class="task-grid">
 					<div class="task-show">
-						<input title="Keep this" type="checkbox" checked={ticket.pin} />
+						<input title="Keep this" on:change={(event) => keeper(event, personTime,ticket)} type="checkbox" checked={ticket.pin} />
 					</div>
 					<div class="task-show">{ticket.desc}</div>
 					<div class="task-show">{ticket.hours}</div>
