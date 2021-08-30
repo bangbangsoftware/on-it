@@ -5,10 +5,12 @@
 
 	let rows: Array<WorkingHourDate> = [];
 	let team: Person[] = [];
+	let totals: number[] = [];
 
 	onMount(() => {
 		team = getTeam();
 		rows = getTeamsHours(team);
+		totals = team.map((m,i)=> total(i));
 	});
 
 	const hourChange = (personHour, event) => {
@@ -45,6 +47,7 @@
 	};
 
 	const save = () => {
+		totals = team.map((m,i)=> total(i));
 		localStorage.setItem('teamsHours', JSON.stringify(rows));
 	};
 
@@ -53,7 +56,13 @@
 		rows = getTeamsHours(team);
 		save();
 	}
-	
+
+	const total = (index:number) => {
+		const total = rows.map(row =>row.peoplesWorkingHours[index].hours)
+						  .reduce((a: number,b: number) => (a + b));
+		return total;
+	}
+
 </script>
 
 <svelte:head>
@@ -95,6 +104,19 @@
 				{/each}
 			</tr>
 		{/each}
+			{#each team as person, index (index)}
+			<tr>
+				<td class="left">{person.name}</td>
+				<td>Total</td>
+				{#each team as personTotal, ptIndex (ptIndex)}
+					{#if ptIndex == index}
+						<td>{totals[index]}</td>
+					{:else}
+						<td></td>
+					{/if}
+				{/each}
+		</tr>
+			{/each}
 	</table>
 </div>
 
