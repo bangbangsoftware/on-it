@@ -14,6 +14,9 @@
 		const stored = localStorage.getItem('peopleTimes');
 		const fromStore = stored ? JSON.parse(stored) : null;
 		peopleTimes = fromStore ? fromStore : defaultTimes();
+		if (!fromStore) {
+			loadDefaults();
+		}
 		total = peopleTimes.map((peopleTime) => peopleTime.hours).reduce((a, b) => a + b);
 		busy = peopleTimes
 			.map((peopleTime) => {
@@ -30,33 +33,36 @@
 
 	onMount(setup);
 
-	const clear = () =>{
-		localStorage.removeItem("peopleTimes");
+	const clear = () => {
+		localStorage.removeItem('peopleTimes');
 		setup();
-		peopleTimes.forEach((personTime:PeopleTime)=>{
-			const key = personTime.person.id+"-"+personTime.person.name;
+		loadDefaults();
+	};
+
+	const loadDefaults = () => {
+		peopleTimes.forEach((personTime: PeopleTime) => {
+			const key = personTime.person.id + '-' + personTime.person.name;
 			const fromStore = localStorage.getItem(key);
-			const tasks:Array<Ticket> = fromStore? JSON.parse(fromStore): [];
-			tasks.forEach((ticket:Ticket)=>{
-				validateAndSave(personTime.person.id, ticket.desc, ticket.hours+"", true);
+			const tasks: Array<Ticket> = fromStore ? JSON.parse(fromStore) : [];
+			tasks.forEach((ticket: Ticket) => {
+				validateAndSave(personTime.person.id, ticket.desc, ticket.hours + '', true);
 			});
-		})
-	}
+		});
+	};
 
-	const personTotal = (index:number, dates) => {
-		const total = dates.map(row =>row.peoplesWorkingHours[index].hours)
-						  .reduce((a: number,b: number) => (a + b));
+	const personTotal = (index: number, dates) => {
+		const total = dates
+			.map((row) => row.peoplesWorkingHours[index].hours)
+			.reduce((a: number, b: number) => a + b);
 		return total;
-	}
-
+	};
 
 	const defaultTimes = () => {
-		debugger;
 		const team = getTeam();
 		const dates = getTeamsHours(team);
-		const peopleTotals = team.map((person,i) => ({
+		const peopleTotals = team.map((person, i) => ({
 			person,
-			hours: personTotal(i,dates),
+			hours: personTotal(i, dates),
 			times: Array<Ticket>()
 		}));
 
@@ -67,25 +73,24 @@
 		localStorage.setItem('peopleTimes', JSON.stringify(peopleTimes));
 	};
 
-	const determineHours =(hours:string) =>{
+	const determineHours = (hours: string) => {
 		try {
 			const f = parseFloat(hours);
 			return f;
-		} catch(er){
-			console.warn(hours+" is not a float");
+		} catch (er) {
+			console.warn(hours + ' is not a float');
 		}
-		const value = hours.substring(0,hours.length-1).trim();
-		const numberType = hours.substring(hours.trim().length -1);
+		const value = hours.substring(0, hours.length - 1).trim();
+		const numberType = hours.substring(hours.trim().length - 1);
 
 		try {
 			const f = parseFloat(value);
-			if (hours.endsWith("d")){
-
-}
-		} catch(er){
-			console.warn(value+" is not a float with type "+numberType);
+			if (hours.endsWith('d')) {
+			}
+		} catch (er) {
+			console.warn(value + ' is not a float with type ' + numberType);
 		}
-	}
+	};
 
 	const validateAndSave = (personId: number, desc: string, hoursString: string, pin = false) => {
 		console.log(personId, desc, hoursString);
@@ -113,9 +118,11 @@
 			peopleTime.times.push(newTask);
 			return peopleTime;
 		});
-		(<HTMLInputElement>document.getElementById(personId + '--new-task-hours')).value = '';
-		(<HTMLInputElement>document.getElementById(personId + '--new-task')).value = '';
-		(<HTMLInputElement>document.getElementById(personId + '--new-task')).focus();
+		if (document.getElementById(personId + '--new-task-hours')) {
+			(<HTMLInputElement>document.getElementById(personId + '--new-task-hours')).value = '';
+			(<HTMLInputElement>document.getElementById(personId + '--new-task')).value = '';
+			(<HTMLInputElement>document.getElementById(personId + '--new-task')).focus();
+		}
 		busy = busy + hours;
 		continuity = total - busy;
 		save();
@@ -134,17 +141,17 @@
 		save();
 	};
 
-	const addHours = (tickets: Array<Ticket>) =>{
-		if (tickets.length == 0){
+	const addHours = (tickets: Array<Ticket>) => {
+		if (tickets.length == 0) {
 			return 0;
 		}
 		return tickets.map((ticket) => ticket.hours).reduce((a, b) => a + b);
-	}
+	};
 
-	const workContinuity = (personTime: PeopleTime) =>{
+	const workContinuity = (personTime: PeopleTime) => {
 		const hours = addHours(personTime.times);
 		return personTime.hours - hours;
-	}
+	};
 
 	const onKeyPress = (e) => {
 		if (e.charCode !== 13) {
@@ -158,33 +165,38 @@
 		const hours = parseInt(
 			(<HTMLInputElement>document.getElementById(id + '--new-task-hours')).value
 		);
-		validateAndSave(id, taskName, hours+"");
+		validateAndSave(id, taskName, hours + '');
 	};
 
-	const take = (tickets:Array<Ticket>, ticket: Ticket):Array<Ticket>=> tickets.filter(tick => tick.desc != ticket.desc);
-	const add  = (tickets:Array<Ticket>, ticket: Ticket):Array<Ticket> => {
+	const take = (tickets: Array<Ticket>, ticket: Ticket): Array<Ticket> =>
+		tickets.filter((tick) => tick.desc != ticket.desc);
+	const add = (tickets: Array<Ticket>, ticket: Ticket): Array<Ticket> => {
 		ticket.pin = true;
 		tickets.push(ticket);
 		return tickets;
-	}
-	const clean = (list:Array<Ticket>):Array<Ticket> =>{
-		const cleanList:Array<Ticket> = [];
-		list.forEach((ticket:Ticket)=>{
-			const inAlready = cleanList.find((t:Ticket)=> t.desc == ticket.desc);
-			if (!inAlready){
+	};
+	const clean = (list: Array<Ticket>): Array<Ticket> => {
+		const cleanList: Array<Ticket> = [];
+		list.forEach((ticket: Ticket) => {
+			const inAlready = cleanList.find((t: Ticket) => t.desc == ticket.desc);
+			if (!inAlready) {
 				cleanList.push(ticket);
 			}
 		});
 		return cleanList;
-	}
+	};
 
-	const keeper = (event, personTime: PeopleTime, ticket: Ticket) =>{
-		const pinnedTickets = localStorage.getItem(personTime.person.id+"-"+personTime.person.name);
-		const tickets:Array<Ticket> = pinnedTickets? JSON.parse(pinnedTickets): [];
-		const newList:Array<Ticket> = (event.target.value == 'on')? add(tickets,ticket):take(tickets,ticket); 
+	const keeper = (event, personTime: PeopleTime, ticket: Ticket) => {
+		const pinnedTickets = localStorage.getItem(personTime.person.id + '-' + personTime.person.name);
+		const tickets: Array<Ticket> = pinnedTickets ? JSON.parse(pinnedTickets) : [];
+		const newList: Array<Ticket> =
+			event.target.value == 'on' ? add(tickets, ticket) : take(tickets, ticket);
 		const cleanList = clean(newList);
-		localStorage.setItem(personTime.person.id+"-"+personTime.person.name,JSON.stringify(cleanList));
-	}
+		localStorage.setItem(
+			personTime.person.id + '-' + personTime.person.name,
+			JSON.stringify(cleanList)
+		);
+	};
 </script>
 
 <svelte:head>
@@ -220,7 +232,12 @@
 			{#each personTime.times as ticket, index}
 				<div class="task-grid">
 					<div class="task-show">
-						<input title="Keep this" on:change={(event) => keeper(event, personTime,ticket)} type="checkbox" checked={ticket.pin} />
+						<input
+							title="Keep this"
+							on:change={(event) => keeper(event, personTime, ticket)}
+							type="checkbox"
+							checked={ticket.pin}
+						/>
 					</div>
 					<div class="task-show">{ticket.desc}</div>
 					<div class="task-show">{ticket.hours}</div>
@@ -235,7 +252,7 @@
 				<div>Busy</div>
 				<div class="total">{addHours(personTime.times)}</div>
 			</div>
-			<br>
+			<br />
 			<div class="task">
 				<div>Continuity</div>
 				<div class="total">{workContinuity(personTime)}</div>
