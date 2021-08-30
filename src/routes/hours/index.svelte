@@ -53,6 +53,7 @@
 
 	const resetDate = () =>{
 		localStorage.removeItem("teamsHours");
+		localStorage.removeItem("peopleTimes");
 		rows = getTeamsHours(team);
 		save();
 	}

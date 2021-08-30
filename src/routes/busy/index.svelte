@@ -38,29 +38,29 @@
 			const fromStore = localStorage.getItem(key);
 			const tasks:Array<Ticket> = fromStore? JSON.parse(fromStore): [];
 			tasks.forEach((ticket:Ticket)=>{
-				validateAndSave(personTime.person.id, ticket.desc, ticket.hours, true);
+				validateAndSave(personTime.person.id, ticket.desc, ticket.hours+"", true);
 			});
 		})
 	}
 
+	const personTotal = (index:number, dates) => {
+		const total = dates.map(row =>row.peoplesWorkingHours[index].hours)
+						  .reduce((a: number,b: number) => (a + b));
+		return total;
+	}
+
+
 	const defaultTimes = () => {
+		debugger;
 		const team = getTeam();
 		const dates = getTeamsHours(team);
-		const peopleTotals: Array<PersonHour> = [];
-		dates.forEach((workingHourDate) => {
-			const peopleHours = workingHourDate.peoplesWorkingHours;
-			peopleHours.forEach((peopleHour, i) => {
-				const hasTotal = peopleTotals.length > i + 1;
-				const total = hasTotal ? peopleTotals[i].hours + peopleHour.hours : peopleHour.hours;
-				peopleTotals[i] = { person: peopleHour.person, hours: total };
-			});
-		});
-
-		return peopleTotals.map((peopleHours) => ({
-			person: peopleHours.person,
-			hours: peopleHours.hours,
+		const peopleTotals = team.map((person,i) => ({
+			person,
+			hours: personTotal(i,dates),
 			times: Array<Ticket>()
 		}));
+
+		return peopleTotals;
 	};
 
 	const save = () => {
@@ -134,8 +134,12 @@
 		save();
 	};
 
-	const addHours = (tickets: Array<Ticket>) =>
-		tickets.map((ticket) => ticket.hours).reduce((a, b) => a + b);
+	const addHours = (tickets: Array<Ticket>) =>{
+		if (tickets.length == 0){
+			return 0;
+		}
+		return tickets.map((ticket) => ticket.hours).reduce((a, b) => a + b);
+	}
 
 	const workContinuity = (personTime: PeopleTime) =>{
 		const hours = addHours(personTime.times);
@@ -154,7 +158,7 @@
 		const hours = parseInt(
 			(<HTMLInputElement>document.getElementById(id + '--new-task-hours')).value
 		);
-		validateAndSave(id, taskName, hours);
+		validateAndSave(id, taskName, hours+"");
 	};
 
 	const take = (tickets:Array<Ticket>, ticket: Ticket):Array<Ticket>=> tickets.filter(tick => tick.desc != ticket.desc);
